@@ -1,0 +1,79 @@
+services:
+  #
+  # NODEJS
+  #
+
+  app:
+    container_name: ${COMPOSE_PROJECT_NAME:-unamed-project}-app
+    hostname: dev-container
+    build:
+      context: .
+      dockerfile: Dockerfile.nodejs
+    working_dir: /app
+    volumes:
+      - ../../app:/app
+      # - /app/node_modules
+
+
+  #
+  # POSTGRES
+  #
+
+  postgres:
+    container_name: ${COMPOSE_PROJECT_NAME:-unamed-project}-postgres
+    build:
+      context: .
+      dockerfile: Dockerfile.postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    expose:
+      - 5432
+    ports:
+      - 5432:5432
+    volumes:
+      - ./.data/postgres:/var/lib/postgresql/data
+
+  #
+  # MYSQL
+  #
+
+  # mysql:
+  #   container_name: ${COMPOSE_PROJECT_NAME:-unamed-project}-mysql
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.mysql
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+  #     MYSQL_DATABASE: ${MYSQL_DATABASE:-mysql}
+  #     MYSQL_USER: ${MYSQL_USER:-mysql}
+  #     MYSQL_PASSWORD: ${MYSQL_PASSWORD:-mysql}
+  #   expose:
+  #     - 3306
+  #   volumes:
+  #     - ./.data/mysql:/var/lib/mysql
+
+  #
+  # REDIS
+  #
+
+  redis:
+    container_name: ${COMPOSE_PROJECT_NAME:-unamed-project}-redis
+    build:
+      context: .
+      dockerfile: Dockerfile.redis
+    expose:
+      - 6379
+    volumes:
+      - ./.data/redis:/data
+    command:
+      - 'redis-server'
+      - '--loglevel ${REDIS_LOGLEVEL:-warning}'
+      - '--databases ${REDIS_DATABASES:-2}'
+      - '--save 900 1'
+      - '--save 300 10'
+      - '--save 60 10000'
+      - '--maxmemory ${REDIS_MAXMEM:-50mb}'
+      - '--maxmemory-policy ${REDIS_POLICY:-noeviction}'
+      - '--requirepass ${REDIS_PASSWORD}'
